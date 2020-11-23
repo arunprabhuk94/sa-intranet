@@ -1,0 +1,45 @@
+.form-group label {
+  color: var(--color-light-grey);
+}
+
+::-webkit-input-placeholder {
+  color: var(--color-light-grey-light) !important;
+}
+:-ms-input-placeholder {
+  color: var(--color-light-grey-light) !important;
+}
+::placeholder {
+  color: var(--color-light-grey-light) !important;
+}
+
+.page-contents form {
+  max-width: 550px;
+}
+
+.home-page-container h2 {
+  font-weight: bolder !important;
+  color: var(--color-dark-grey);
+}
+
+.home-page-container .btn {
+  min-width: 140px;
+}
+
+.input-group-append {
+  background: linear-gradient(
+    180deg,
+    rgba(235, 238, 240, 0.4) 0%,
+    rgba(207, 207, 212, 0.4) 100%
+  );
+}
+.input-group-append .input-group-text {
+  background: none;
+}
+
+.form-check-input {
+  background: linear-gradient(
+    180deg,
+    rgba(235, 238, 240, 0.4) 0%,
+    rgba(207, 207, 212, 0.4) 100%
+  );
+}

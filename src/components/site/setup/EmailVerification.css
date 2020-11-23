@@ -1,0 +1,16 @@
+.verification-code {
+  justify-content: space-between;
+}
+.verification-code-box {
+  width: 45px;
+  height: 45px;
+}
+.verification-code-box input {
+  width: 100% !important;
+  height: 100% !important;
+  border: 1px solid #a1a6a9;
+}
+
+.verification-code-box input.verification-code-box-error {
+  border: 1px solid var(--danger);
+}

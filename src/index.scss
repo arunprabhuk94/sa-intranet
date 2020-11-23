@@ -1,0 +1,75 @@
+$theme-colors: (
+  "primary": #3bc163,
+);
+
+@import "node_modules/bootstrap/scss/bootstrap";
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
+
+:root {
+  --color-dark-grey: #183247;
+  --color-dark-grey-light: rgba(24, 50, 71, 0.7);
+  --color-dark-grey-light-2: rgba(24, 50, 71, 0.54);
+  --color-dark-grey-light-3: rgba(24, 50, 71, 0.4);
+  --color-dark-grey-light-4: rgba(24, 50, 71, 0.3);
+  --color-light-grey: #a1a6a9;
+  --color-light-grey-light: rgba(161, 166, 169, 0.62);
+  --color-light-grey-light-2: rgba(161, 166, 169, 0.13);
+  --color-light-grey-light-3: rgba(161, 166, 169, 0.08);
+  --color-light-grey-light-4: rgba(161, 166, 169, 0.35);
+  --link-color: #239cff;
+  --font-size-md: 13px;
+  --font-size-md-2: 14px;
+}
+
+body {
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: "Open Sans", sans-serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.font-dark-grey {
+  color: var(--color-dark-grey) !important;
+}
+.font-dark-grey-light-2 {
+  color: var(--color-dark-grey-light-2);
+}
+.font-dark-grey-light-3 {
+  color: var(--color-dark-grey-light-3);
+}
+.font-dark-grey-light-4 {
+  color: var(--color-dark-grey-light-4);
+}
+.font-light-grey {
+  color: var(--color-dark-grey-light);
+}
+.font-light-grey-2 {
+  color: var(--color-light-grey);
+}
+.nav-item.active .nav-link {
+  filter: brightness(0.8);
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.font-size-md {
+  font-size: var(--font-size-md);
+}
+.font-size-md-2 {
+  font-size: var(--font-size-md-2);
+}
+.font-weight-600 {
+  font-weight: 600;
+}
