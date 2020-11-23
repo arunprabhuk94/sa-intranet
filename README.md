@@ -2,6 +2,10 @@
 
 This is a repository created for the machine test round of the SquashApps interview.
 
+### Demo Url
+
+[https://sa-intranet.herokuapp.com/](https://sa-intranet.herokuapp.com/)
+
 ### Clone the app
 
 ```
