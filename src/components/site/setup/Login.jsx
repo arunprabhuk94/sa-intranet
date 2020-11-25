@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { setUserAction } from "../../../store/actions/authActions";
-import { apiRequest } from "../../../utils/requests";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 
 const Login = ({
   loginPage,
@@ -114,25 +114,20 @@ const LoginFormik = withFormik({
         email: values.email,
         password: values.password,
       };
-      const response = await apiRequest(
-        "post",
-        "/users/login",
-        null,
-        formFields
-      );
+      const response = await apiRequest("post", "/users/login", {
+        formData: formFields,
+        storeToken: values.rememberMe,
+      });
       resetForm();
-      if (response.data.users)
+      if (response.data.users && response.data.user.company)
         response.data.user.company.users = response.data.users;
       props.dispatch(
-        setUserAction(response.data, props.history, values.rememberMe)
+        setUserAction(response.data, props.history, {
+          storeToken: values.rememberMe,
+        })
       );
     } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
-      });
+      setSubmitError(err, setErrors);
     }
     setSubmitting(false);
   },

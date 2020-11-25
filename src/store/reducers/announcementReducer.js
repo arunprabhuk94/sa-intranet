@@ -7,7 +7,6 @@ import {
 
 const initialState = {
   announcements: [],
-  users: [],
 };
 
 const referralReducer = (state = initialState, action) => {

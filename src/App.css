@@ -2,6 +2,12 @@
   display: block;
 }
 
+.App {
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .page-contents {
   display: flex;
   justify-content: stretch;

@@ -13,13 +13,15 @@ const Header = (props) => {
       </Link>
       <ul className="navbar-nav ml-auto">
         {auth.isLoggedIn ? (
-          <li className={"nav-item " + activeFor(["/logout"], props)}>
+          <li
+            className={"nav-item text-right " + activeFor(["/logout"], props)}
+          >
             <Link className="nav-link" to="/logout">
               Logout
             </Link>
           </li>
         ) : (
-          <li className={"nav-item " + activeFor(["/login"], props)}>
+          <li className={"nav-item text-right " + activeFor(["/login"], props)}>
             <Link className="nav-link" to="/login">
               Login
             </Link>

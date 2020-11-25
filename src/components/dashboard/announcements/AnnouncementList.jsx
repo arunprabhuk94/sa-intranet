@@ -15,11 +15,9 @@ const AnnouncementList = () => {
 
   const fetchAnnouncements = useCallback(async () => {
     try {
-      const response = await apiRequest(
-        "get",
-        "/announcements",
-        auth.user.token
-      );
+      const response = await apiRequest("get", "/announcements", {
+        token: auth.user.token,
+      });
       dispatch(setAnnouncementsAction(response.data));
     } catch (err) {}
   }, [auth.user.token, dispatch]);

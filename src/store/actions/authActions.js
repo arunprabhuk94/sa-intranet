@@ -10,14 +10,14 @@ export const logoutAction = () => {
 export const setUserAction = (
   { user, token },
   history,
-  setAutoLogin = true
+  { storeToken = false, isAutoLogin = false } = {}
 ) => {
   return async (dispatch, getState) => {
     await dispatch({
       type: SET_USER,
-      payload: { user, token, setAutoLogin, history },
+      payload: { user, token, storeToken, isAutoLogin, history },
     });
     const { auth } = getState();
-    loginRedirect(auth, history, setAutoLogin);
+    loginRedirect(auth, history, isAutoLogin);
   };
 };

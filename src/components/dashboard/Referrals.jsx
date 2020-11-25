@@ -17,11 +17,9 @@ const Referrals = () => {
 
   const fetchReferrals = useCallback(async () => {
     try {
-      const response = await apiRequest(
-        "get",
-        "/users/referrals",
-        auth.user.token
-      );
+      const response = await apiRequest("get", "/users/referrals", {
+        token: auth.user.token,
+      });
       dispatch(updateReferralsAction(response.data));
     } catch (err) {}
   }, [auth.user, dispatch]);

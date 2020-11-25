@@ -4,7 +4,7 @@ import OtpInput from "react-otp-input";
 import "./EmailVerification.css";
 
 import { setUserAction } from "../../../store/actions/authActions";
-import { apiRequest } from "../../../utils/requests";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 
 const EmailVerification = ({
   errors,
@@ -80,23 +80,16 @@ const EmailVerificationFormik = withFormik({
       const formFields = {
         verificationCode: values.verificationCode,
       };
-      const response = await apiRequest(
-        "post",
-        "/users/verifyemail",
-        props.auth.user.token,
-        formFields
-      );
+      const response = await apiRequest("post", "/users/verifyemail", {
+        token: props.auth.user.token,
+        formData: formFields,
+      });
 
       resetForm();
-      props.dispatch(setUserAction(response.data, props.history));
+      await props.dispatch(setUserAction(response.data, props.history));
     } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
-        verificationCode: "Invalid OTP",
-      });
+      setSubmitError(err, setErrors);
+      setErrors({ verificationCode: "Invalid OTP" });
     }
     setSubmitting(false);
   },

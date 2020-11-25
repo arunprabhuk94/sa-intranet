@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { setUserAction } from "../../../store/actions/authActions";
-import { apiRequest } from "../../../utils/requests";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 import { getFullName } from "../../../utils/helper";
 
 const PasswordCreation = ({
@@ -112,22 +112,15 @@ const PasswordCreationFormik = withFormik({
         name: getFullName(values.firstName, values.lastName),
         password: values.password,
       };
-      const response = await apiRequest(
-        "post",
-        "/users/setpassword",
-        props.auth.user.token,
-        formFields
-      );
+      const response = await apiRequest("post", "/users/setpassword", {
+        token: props.auth.user.token,
+        formData: formFields,
+      });
 
       resetForm();
-      props.dispatch(setUserAction(response.data, props.history));
+      await props.dispatch(setUserAction(response.data, props.history));
     } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
-      });
+      setSubmitError(err, setErrors);
     }
     setSubmitting(false);
   },

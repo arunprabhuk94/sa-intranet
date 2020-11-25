@@ -39,7 +39,9 @@ module.exports = {
       });
     }
 
-    const addField = [{ $addFields: { [localField]: { $first: `$${as}` } } }];
+    const addField = [
+      { $addFields: { [localField]: { $arrayElemAt: [`$${as}`, 0] } } },
+    ];
 
     if (arrayField) {
       groupSteps = [
@@ -59,7 +61,7 @@ module.exports = {
                   [arrayField]: {
                     $filter: {
                       input: "$arrayField",
-                      cond: { $gt: ["$$this", {}] },
+                      cond: { $ne: ["$$this", {}] },
                     },
                   },
                   id: "$_id",

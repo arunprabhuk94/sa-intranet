@@ -13,23 +13,30 @@ const initialState = {
   },
 };
 
+const setToken = (payload) => {
+  let token = sessionStorage.getItem("token") || localStorage.getItem("token");
+  if (payload.token) {
+    token = payload.token;
+    if (payload.storeToken) {
+      localStorage.setItem("token", token);
+    }
+    sessionStorage.setItem("token", token);
+  }
+  return token;
+};
+
 const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case LOGOUT:
-      localStorage.setItem("token", "");
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
       return initialState;
     case SET_USER:
       const user = action.payload.user;
-      let storedToken = localStorage.getItem("token");
-      if (action.payload.token) storedToken = action.payload.token;
-
-      if (action.payload.token && action.payload.setAutoLogin)
-        localStorage.setItem("token", action.payload.token);
-      else localStorage.removeItem("token");
-
+      const token = setToken(action.payload);
       const auth = {
         isLoggedIn: true,
-        user: { ...user, token: storedToken },
+        user: { ...user, token },
       };
       return auth;
     default:

@@ -11,7 +11,7 @@ const Logout = (props) => {
   const logout = useCallback(async () => {
     if (auth.user.token) {
       try {
-        await apiRequest("get", "/users/logout", auth.user.token);
+        await apiRequest("get", "/users/logout", { token: auth.user.token });
       } catch (err) {}
     }
     await dispatch(logoutAction());

@@ -33,15 +33,15 @@ const Dashboard = () => {
   }, [setIsSidebarOpen, location.pathname, path]);
 
   return (
-    <div className="row dashboard-container">
+    <div className="row dashboard-container flex-fill">
       <div className="col-sm-4 col-md-3 col-lg-2 left-menu">
         <LeftMenu />
       </div>
-      <div className="col-sm-8 col-md-9 col-lg-10">
+      <div className="col-sm-8 col-md-9 col-lg-10 h-100 d-flex flex-column">
         <nav className="navbar navbar-expand-sm row h-50px">
           <div className="font-dark-grey font-weight-bolder">{title}</div>
         </nav>
-        <div className="dashboard-contents pt-3 row position-relative">
+        <div className="dashboard-contents pt-3 row position-relative d-flex flex-column flex-fill">
           <Switch>
             <Route
               path={path}

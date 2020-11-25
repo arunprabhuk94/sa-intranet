@@ -17,8 +17,7 @@ const CommentBox = ({ announcementId }) => {
         const response = await apiRequest(
           "post",
           `/announcements/${announcementId}/comment`,
-          auth.user.token,
-          { comment }
+          { token: auth.user.token, formData: { comment } }
         );
         dispatch(addCommentAction(response.data.comment, announcementId));
         setComment("");

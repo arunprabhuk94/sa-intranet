@@ -16,7 +16,7 @@ const SearchBox = () => {
         const response = await apiRequest(
           "get",
           "/announcements?searchText=" + searchText,
-          auth.user.token
+          { token: auth.user.token }
         );
         dispatch(setAnnouncementsAction(response.data));
       } catch (err) {}

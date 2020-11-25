@@ -11,8 +11,8 @@ export const addAnnouncementAction = ({ announcement }) => {
   return { type: ADD_ANNOUNCEMENT, payload: { announcement } };
 };
 
-export const updateAnnouncementAction = ({ announcement }) => {
-  return { type: UPDATE_ANNOUNCEMENT, payload: { announcement } };
+export const updateAnnouncementAction = ({ announcements }) => {
+  return { type: UPDATE_ANNOUNCEMENT, payload: { announcements } };
 };
 
 export const addCommentAction = (comment, announcementId) => {

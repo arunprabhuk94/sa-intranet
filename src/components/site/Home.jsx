@@ -22,7 +22,7 @@ const Home = ({ location }) => {
   const auth = useSelector((state) => state.auth);
 
   return (
-    <div className="home-page-container">
+    <div className="home-page-container w-100">
       <Header />
       <div className="page-contents mt-3">
         <div className="row" style={{ width: "calc(100% + 30px)" }}>

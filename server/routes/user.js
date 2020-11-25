@@ -20,7 +20,7 @@ router.post(
   [body("email").isEmail()],
   validationErrors,
   async (req, res) => {
-    const { email } = req.body;
+    const { email, storeToken } = req.body;
 
     try {
       const user = await User.findOne({ email });
@@ -34,7 +34,7 @@ router.post(
 
       await newUser.save();
       sendVerificationEmail(newUser);
-      const token = await newUser.generateAuthToken();
+      const token = await newUser.generateAuthToken(storeToken, req);
 
       res.status(201).send({ user: newUser, token });
     } catch (e) {
@@ -131,12 +131,25 @@ router.post(
   }
 );
 
+const populateUsers = async (user) => {
+  if (user.company) {
+    await user.company.populate("users", "id name email").execPopulate();
+    user.company.users.map((user) => {
+      user.id = user._id;
+      delete user._id;
+      return user;
+    });
+    return user.company.users;
+  }
+  return [];
+};
+
 router.post(
   "/login",
   [body("email").isEmail()],
   validationErrors,
   async (req, res) => {
-    let { email, password } = req.body;
+    let { email, password, storeToken } = req.body;
     try {
       const user = await User.findOne({ email });
       if (!user || (user.password && !password))
@@ -146,25 +159,36 @@ router.post(
         if (!doesPasswordMatch) throw new Error("Invalid Credentials");
       }
 
-      const token = await user.generateAuthToken();
-      res.status(200).send({ user, token, users: user.company.users });
+      const token = await user.generateAuthToken(storeToken, req);
+      const users = await populateUsers(user);
+      res.status(200).send({ user, token, users });
     } catch (e) {
+      console.log(e);
       res.status(500).send(errorResponse(e));
     }
   }
 );
 
 router.get("/autologin", authMiddleware, async (req, res) => {
-  res.status(200).send({ user: req.user, users: req.user.company.users });
+  const users = await populateUsers(req.user);
+  res.status(200).send({ user: req.user, users });
 });
 
 router.get("/logout", authMiddleware, async (req, res) => {
+  req.session.tokens = req.session.tokens.filter(
+    (token) => token.token !== req.token
+  );
+  await req.session.save();
   req.user.tokens = req.user.tokens.filter((token) => token !== req.token);
   await req.user.save();
   res.status(200).send({ user: req.user });
 });
 
 router.get("/logoutall", authMiddleware, async (req, res) => {
+  req.session.tokens = req.session.tokens.filter(
+    (token) => token.user !== req.user._id
+  );
+  await req.session.save();
   req.user.tokens = [];
   await req.user.save();
   res.status(200).send({ user: req.user });

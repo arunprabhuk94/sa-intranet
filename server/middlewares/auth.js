@@ -1,13 +1,23 @@
 const User = require("../models/user");
+const mongoose = require("mongoose");
 const { verifyJwtToken } = require("../utilities/auth");
 
 module.exports = async (req, res, next) => {
   try {
-    const token = req.header("Authorization").replace("Bearer ", "");
-    const userId = await verifyJwtToken(token);
+    const token = req.header("Authorization").replace(/Bearer\s?/, "");
+    const userId = token ? await verifyJwtToken(token) : null;
     if (!userId) throw new Error();
-    req.user = await User.findOne({ _id: userId, tokens: token });
-    if (!req.user) throw new Error();
+
+    const foundInSession = req.session.tokens.find(
+      (tokenElem) =>
+        tokenElem.user.toString() === userId && tokenElem.token === token
+    );
+    const userSearch = { _id: userId };
+    if (!foundInSession) userSearch.tokens = token;
+    const user = await User.findOne(userSearch);
+    if (!user) throw new Error();
+
+    req.user = user;
     req.token = token;
     next();
   } catch (err) {

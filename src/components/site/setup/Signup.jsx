@@ -2,7 +2,7 @@ import React from "react";
 import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { setUserAction } from "../../../store/actions/authActions";
-import { apiRequest } from "../../../utils/requests";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 
 const Signup = ({ errors, touched, isSubmitting, setErrors }) => {
   return (
@@ -65,21 +65,13 @@ const SignupFormik = withFormik({
       const formFields = {
         email: values.email,
       };
-      const response = await apiRequest(
-        "post",
-        "/users/signup",
-        null,
-        formFields
-      );
+      const response = await apiRequest("post", "/users/signup", {
+        formData: formFields,
+      });
       resetForm();
       props.dispatch(setUserAction(response.data, props.history));
     } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
-      });
+      setSubmitError(err, setErrors);
     }
     setSubmitting(false);
   },

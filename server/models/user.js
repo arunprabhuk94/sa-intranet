@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 
 const { signJwtToken } = require("../utilities/auth");
 const { getRandomColor } = require("../utilities/helper");
+const Session = require("./session");
 
 const userSchema = new mongoose.Schema(
   {
@@ -66,24 +67,32 @@ userSchema.virtual("announcements", {
   foreignField: "owner",
 });
 
-userSchema.methods.generateAuthToken = async function () {
+userSchema.methods.generateAuthToken = async function (storeToken, req) {
   const user = this;
   const token = signJwtToken(user);
-  user.tokens.push(token);
-  await user.save();
+
+  req.session.tokens.push({ user: user._id, token });
+  await req.session.save();
+
+  if (storeToken) {
+    user.tokens.push(token);
+    await user.save();
+  }
 
   return token;
 };
 
 userSchema.post("findOne", async function (doc) {
-  await doc.populate("company").execPopulate();
-  await doc.company
-    .populate({
-      path: "users",
-      select: "_id email",
-      match: { _id: { $ne: doc._id } },
-    })
-    .execPopulate();
+  if (doc && doc.company) {
+    await doc.populate("company").execPopulate();
+    await doc
+      .populate({
+        path: "company.users",
+        select: "_id email",
+        match: { _id: { $ne: doc._id } },
+      })
+      .execPopulate();
+  }
 });
 
 userSchema.pre("save", async function (done) {

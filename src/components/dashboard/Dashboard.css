@@ -8,7 +8,8 @@
 
 .dashboard-contents {
   background: var(--dashboard-background);
-  min-height: calc(100vh - 50px);
+  overflow-y: auto;
+  max-height: calc(100vh - 50px);
 }
 .left-menu {
   background-color: var(--left-menu-color);

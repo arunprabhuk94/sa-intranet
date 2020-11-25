@@ -9,11 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 
 import CloseBtn from "./CloseBtn";
-import {
-  addAnnouncementAction,
-  updateAnnouncementAction,
-} from "../../../store/actions/announcementActions";
-import { apiRequest } from "../../../utils/requests";
+import { setAnnouncementsAction } from "../../../store/actions/announcementActions";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 
 const categories = [
   { id: "announcement", name: "Announcement" },
@@ -51,11 +48,9 @@ const AnnouncementCreate = ({
   const fetchAnnouncement = useCallback(
     async (id) => {
       try {
-        const response = await apiRequest(
-          "get",
-          "/announcements/" + id,
-          auth.user.token
-        );
+        const response = await apiRequest("get", "/announcements/" + id, {
+          token: auth.user.token,
+        });
         const { announcement } = response.data;
         setValues({
           id: announcement.id,
@@ -297,25 +292,17 @@ const AnnouncementCreateFormik = withFormik({
       const method = isEditPage ? "patch" : "post";
       const endPoint =
         "/announcements" + (isEditPage ? "/" + props.match.params.id : "");
-      const response = await apiRequest(
-        method,
-        endPoint,
-        props.auth.user.token,
-        formFields
-      );
+      const response = await apiRequest(method, endPoint, {
+        token: props.auth.user.token,
+        formData: formFields,
+      });
       resetForm();
-      const storeAction = isEditPage
-        ? updateAnnouncementAction
-        : addAnnouncementAction;
-      await props.dispatch(storeAction(response.data, props.history));
+      await props.dispatch(
+        setAnnouncementsAction(response.data, props.history)
+      );
       props.history.push("/app");
     } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
-      });
+      setSubmitError(err, setErrors);
     }
     setSubmitting(false);
   },

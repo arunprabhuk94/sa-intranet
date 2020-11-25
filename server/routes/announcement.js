@@ -9,7 +9,10 @@ const { body } = require("express-validator");
 
 const User = require("../models/user");
 const Company = require("../models/company");
-const { sendVerificationEmail } = require("../utilities/emails");
+const {
+  sendVerificationEmail,
+  sendAnnouncementEmail,
+} = require("../utilities/emails");
 const { validationErrors } = require("../middlewares/validation");
 const { errorResponse } = require("../utilities/errorResponse");
 const Announcement = require("../models/announcement");
@@ -17,34 +20,6 @@ const { getSearchType } = require("../utilities/helper");
 const { getLookupArray, projectAndAdd } = require("../utilities/queries");
 
 const router = new express.Router();
-
-router.post(
-  "/",
-  authMiddleware,
-  [
-    body("subject").isString().notEmpty(),
-    body("category").isString().notEmpty(),
-    body("description").isString().notEmpty(),
-    body("users").isArray(),
-  ],
-  validationErrors,
-  async (req, res) => {
-    const user = req.user;
-    const { date } = req.body;
-    try {
-      const announcement = new Announcement({
-        ...req.body,
-        date: new Date(date),
-        owner: user.id,
-      });
-      await announcement.save();
-
-      res.status(200).send({ announcement });
-    } catch (e) {
-      res.status(400).send(errorResponse(e));
-    }
-  }
-);
 
 router.post(
   "/:id/comment",
@@ -83,6 +58,117 @@ router.post(
   }
 );
 
+router.get("/:id", authMiddleware, async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+  try {
+    const announcement = await Announcement.findOne({
+      owner: user.id,
+      _id: id,
+    });
+    if (!announcement) throw new Error("Announcement not found");
+    res.status(201).send({ announcement });
+  } catch (e) {
+    res.status(400).send(errorResponse(e));
+  }
+});
+
+const fetchAllAnnouncements = async (user, searchText) => {
+  const ownerLookupArray = getLookupArray({
+    from: "users",
+    as: "user",
+    localField: "owner",
+    foreignField: "_id",
+    project: {
+      name: 1,
+      email: 1,
+      color: 1,
+    },
+  });
+  const commenterLookupArray = getLookupArray({
+    from: "users",
+    as: "comments.user",
+    localField: "comments.owner",
+    foreignField: "_id",
+    arrayField: "comments",
+    project: {
+      name: 1,
+      email: 1,
+      color: 1,
+    },
+  });
+  const findQuery = [...ownerLookupArray, ...commenterLookupArray];
+  const matchQuery = [
+    {
+      $match: {
+        $and: [
+          {
+            $or: [
+              { "owner.id": ObjectId(user.id) },
+              { "users.id": ObjectId(user.id) },
+            ],
+          },
+          {
+            $or: [{ date: { $gt: new Date() } }, { date: { $exists: false } }],
+          },
+        ],
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    ...projectAndAdd(),
+  ];
+  if (searchText) {
+    let { searchString, searchType } = getSearchType(searchText);
+    if (["name", "email"].includes(searchType)) {
+      searchType = `owner.${searchType}`;
+    }
+    matchQuery[0].$match[searchType] = {
+      $regex: new RegExp(searchString, "i"),
+    };
+  }
+  const finalQuery = findQuery.concat(matchQuery);
+  return await Announcement.aggregate(finalQuery);
+};
+
+router.post(
+  "/",
+  authMiddleware,
+  [
+    body("subject").isString().notEmpty(),
+    body("category").isString().notEmpty(),
+    body("description").isString().notEmpty(),
+    body("users").isArray(),
+  ],
+  validationErrors,
+  async (req, res) => {
+    const user = req.user;
+    const { date } = req.body;
+    const { searchText } = req.query;
+    try {
+      const announcementObj = {
+        ...req.body,
+        owner: user.id,
+      };
+      if (date) {
+        announcementObj.date = new Date(date);
+      }
+      const announcement = new Announcement(announcementObj);
+      await announcement.save();
+      await announcement.populate("owner");
+      sendAnnouncementEmail(announcement);
+
+      const announcements = await fetchAllAnnouncements(user, searchText);
+      res.status(200).send({ announcements });
+    } catch (e) {
+      res.status(400).send(errorResponse(e));
+    }
+  }
+);
+
 router.patch(
   "/:id",
   authMiddleware,
@@ -97,6 +183,7 @@ router.patch(
     const user = req.user;
     const { id } = req.params;
     const updates = Object.keys(req.body);
+    const { searchText } = req.query;
     const validFields = [
       "subject",
       "category",
@@ -115,81 +202,25 @@ router.patch(
       });
       if (!announcement) throw new Error("Announcement not found");
       updates.forEach((update) => (announcement[update] = req.body[update]));
-      announcement.date = new Date(announcement.date);
+      announcement.date = announcement.date || undefined;
+      const reqUrl = `${req.protocol}://${req.get("host")}`;
+      sendAnnouncementEmail(announcement, reqUrl);
       await announcement.save();
 
-      res.status(201).send({ announcement });
+      const announcements = await fetchAllAnnouncements(user, searchText);
+
+      res.status(201).send({ announcements });
     } catch (e) {
       res.status(400).send(errorResponse(e));
     }
   }
 );
 
-router.get("/:id", authMiddleware, async (req, res) => {
-  const user = req.user;
-  const { id } = req.params;
-  try {
-    const announcement = await Announcement.findOne({
-      owner: user.id,
-      _id: id,
-    });
-    if (!announcement) throw new Error("Announcement not found");
-    res.status(201).send({ announcement });
-  } catch (e) {
-    res.status(400).send(errorResponse(e));
-  }
-});
-
 router.get("/", authMiddleware, async (req, res) => {
   const user = req.user;
   const { searchText } = req.query;
   try {
-    const ownerLookupArray = getLookupArray({
-      from: "users",
-      as: "user",
-      localField: "owner",
-      foreignField: "_id",
-      project: {
-        name: 1,
-        email: 1,
-        color: 1,
-      },
-    });
-    const commenterLookupArray = getLookupArray({
-      from: "users",
-      as: "comments.user",
-      localField: "comments.owner",
-      foreignField: "_id",
-      arrayField: "comments",
-      project: {
-        name: 1,
-        email: 1,
-        color: 1,
-      },
-    });
-    const findQuery = [...ownerLookupArray, ...commenterLookupArray];
-    const matchQuery = [
-      {
-        $match: {
-          $or: [
-            { "owner.id": ObjectId(user.id) },
-            { "users.id": ObjectId(user.id) },
-          ],
-        },
-      },
-      ...projectAndAdd(),
-    ];
-    if (searchText) {
-      let { searchString, searchType } = getSearchType(searchText);
-      if (["name", "email"].includes(searchType)) {
-        searchType = `owner.${searchType}`;
-      }
-      matchQuery[0].$match[searchType] = {
-        $regex: new RegExp(searchString, "i"),
-      };
-    }
-    const finalQuery = findQuery.concat(matchQuery);
-    const announcements = await Announcement.aggregate(finalQuery);
+    const announcements = await fetchAllAnnouncements(user, searchText);
 
     res.status(201).send({ announcements });
   } catch (e) {

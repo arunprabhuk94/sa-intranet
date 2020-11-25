@@ -2,7 +2,7 @@ import React from "react";
 import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { setUserAction } from "../../../store/actions/authActions";
-import { apiRequest } from "../../../utils/requests";
+import { apiRequest, setSubmitError } from "../../../utils/requests";
 
 const CompanyDetails = ({
   errors,
@@ -119,22 +119,14 @@ const CompanyDetailsFormik = withFormik({
         noOfEmployees: values.noOfEmployees,
         domainName: values.domainName + ".intranet.com",
       };
-      const response = await apiRequest(
-        "post",
-        "/users/setcompanydetails",
-        props.auth.user.token,
-        formFields
-      );
-
-      resetForm();
-      props.dispatch(setUserAction(response.data, props.history));
-    } catch (err) {
-      let errorMessage = err.response
-        ? err.response.data.errors[0].msg
-        : "Error in submitting the form. Please try again.";
-      setErrors({
-        submitError: errorMessage,
+      const response = await apiRequest("post", "/users/setcompanydetails", {
+        token: props.auth.user.token,
+        formData: formFields,
       });
+      resetForm();
+      await props.dispatch(setUserAction(response.data, props.history));
+    } catch (err) {
+      setSubmitError(err, setErrors);
     }
     setSubmitting(false);
   },

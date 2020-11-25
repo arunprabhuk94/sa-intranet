@@ -12,7 +12,6 @@ module.exports = {
         (!window.location.pathname.includes("/app") && isAutologin) ||
         !isAutologin
       ) {
-        if (!isAutologin) localStorage.removeItem("token");
         history[historyMethod]("/app");
       }
     }

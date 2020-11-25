@@ -58,6 +58,10 @@ const announcementSchema = new mongoose.Schema(
           type: String,
           trim: true,
         },
+        mailSent: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
   },
@@ -80,12 +84,14 @@ announcementSchema.pre("findOne", function () {
   this.populate("owner");
 });
 announcementSchema.post("find", async function (docs) {
-  for (let doc of docs) {
-    await doc.populate("comments.owner").execPopulate();
+  if (doc.populate) {
+    for (let doc of docs) {
+      await doc.populate("comments.owner").execPopulate();
+    }
   }
 });
 announcementSchema.post("findOne", async function (doc) {
-  await doc.populate("comments.owner").execPopulate();
+  if (doc.populate) await doc.populate("comments.owner").execPopulate();
 });
 
 const Announcement = mongoose.model("Announcement", announcementSchema);

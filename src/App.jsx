@@ -12,7 +12,8 @@ function App(props) {
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const autoLogin = useCallback(async () => {
-    const token = localStorage.getItem("token");
+    const token =
+      sessionStorage.getItem("token") || localStorage.getItem("token");
     const unprotectedRoutes = ["/login", "/", "/signup"];
     const isUnprotectedRoute = unprotectedRoutes.includes(
       props.location.pathname
@@ -20,10 +21,16 @@ function App(props) {
     try {
       if (!auth.isLoggedIn) {
         if (token) {
-          const response = await apiRequest("get", `/users/autologin`, token);
-          if (response.data.users)
+          const response = await apiRequest("get", `/users/autologin`, {
+            token,
+          });
+          if (response.data.users && response.data.user.company)
             response.data.user.company.users = response.data.users;
-          dispatch(setUserAction({ ...response.data, token }, props.history));
+          dispatch(
+            setUserAction({ ...response.data, token }, props.history, {
+              isAutoLogin: true,
+            })
+          );
         } else if (!isUnprotectedRoute) props.history.replace("/login");
       }
     } catch (err) {
@@ -36,7 +43,7 @@ function App(props) {
   }, [autoLogin]);
 
   return (
-    <div className="App container-fluid overflow-hidden">
+    <div className="App container-fluid d-flex align-items-stretch">
       <Switch>
         <Route
           path="/app"

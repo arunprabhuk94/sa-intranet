@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SA-INTRANET Announcement alert</title>
+  </head>
+  <body>
+    <h3>Hello, {{email}}</h3>
+    <p>
+      {{senderName}}(<a href="mailto:{{senderEmail}}">{{senderEmail}}</a>) added
+      you to the list of recipients for the new <b>{{category}}</b> {{#if
+      dateString}}scheduled on <b>{{dateString}}</b>{{/if}}.
+    </p>
+    <p>Please click the link below to view the {{category}}</p>
+    <h3>{{subject}}</h3>
+    <a href="{{announcementLink}}">{{announcementLink}}</a>
+    <br /><br />
+    <p>Thank you.</p>
+  </body>
+</html>
