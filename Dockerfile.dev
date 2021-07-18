@@ -1,0 +1,11 @@
+FROM node:14.15.5-alpine3.13
+
+WORKDIR /usr/src/app
+
+RUN npm install -g env-cmd react-scripts concurrently
+COPY package*.json ./
+RUN npm install --no-package-lock
+
+COPY . .
+
+CMD [ "npm", "run", "dev" ]

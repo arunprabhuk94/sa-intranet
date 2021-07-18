@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  db:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - "3000:3000"
+      - "3400:3400"
+    volumes:
+      - /usr/src/app/node_modules
+      - ./:/usr/src/app
+    env_file:
+      - ./config/.env
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=development
